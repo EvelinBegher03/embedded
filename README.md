@@ -20,6 +20,17 @@
   - [keypad](#keypad)
 
 ## PROJECT OVERVIEW
+<br>
+This project implements a <b>SECURE KEYLESS DOOR UNLOCKING SYSTEM</b> based on a <b>PIN code</b>, designed for IoT applications in embedded environments. The user can enter a secret code using a <b>virtual numeric keypad</b> displayed on screen, navigable via an analog joystick. Access is granted only if the entered PIN is correct, mimicking the behavior of an electronic lock. After three consecutive incorrect attempts, the system locks for security reasons. 
+
+<br>
+
+To enhance user experience and environmental adaptability, the device also includes a <b>light sensor</b> that enables automatic switching between day and night modes by changing the graphical interface colors. All interaction is managed through a color display connected via SPI and updated dynamically. 
+<br>
+
+This project serves as a complete demonstration of human-machine interaction (HMI), analog input handling, embedded security, and graphical visualization on a microcontroller. It is entirely developed for the MSP432P401R platform.
+
+
 ## DOCUMENTATION 
 * ### LIBRARIES
 * ### FUNCTION
