@@ -28,6 +28,19 @@ This project serves as a complete demonstration of human-machine interaction (HM
 
 ## DOCUMENTATION 
 * ### LIBRARIES
+<br>
+
+```c
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+#include <ti/devices/msp432p4xx/inc/msp.h>
+#include <ti/grlib/grlib.h>
+#include "HAL_OPT3001.h"
+#include "LcdDriver/Crystalfontz128x128_ST7735.h"
+#include <stdio.h>
+#include <string.h>
+```
+
+<br>
 * ### FUNCTION
 ## PROJECT DESCRIPTION
 * ### SYSTEM AND PERIPHERALS INITIALIZATION
