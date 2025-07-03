@@ -9,10 +9,11 @@
 
 ## Indice
 - [project overview](#project-overview)
+- [requirements](#requirements) 
 - [documentation](#documentation)
   - [libraries](#libraries)
   - [function](#function)
-- [project description](#project-description)
+-  [project description](#project-description)
 - [system and peripherals initialization](#system-and-peripherals-initialization)
 - [dynamic day and night mode](#dynamic-day-and-night-mode)
 - [user interface](#user-interface)
@@ -25,8 +26,10 @@ This project implements a <b>SECURE KEYLESS DOOR UNLOCKING SYSTEM</b> based on a
 To enhance user experience and environmental adaptability, the device also includes a <b>light sensor</b> that enables automatic switching between day and night modes by changing the graphical interface colors. All interaction is managed through a color display connected via SPI and updated dynamically. <br><br>
 This project serves as a complete demonstration of human-machine interaction (HMI), analog input handling, embedded security, and graphical visualization on a microcontroller. It is entirely developed for the MSP432P401R platform.
 
+## REQUIREMENTS
 
 ## DOCUMENTATION 
+
 ### LIBRARIES
 #### Included libraries
 ```c
