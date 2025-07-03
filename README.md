@@ -28,6 +28,33 @@ This project serves as a complete demonstration of human-machine interaction (HM
 
 ## REQUIREMENTS
 
+* HRB LIPO BATTERY <br>
+A rechargeable battery that provides electric power for the whole system. <br>
+<b>USE </b>: to power the servo motor, the voltage converter, and all the electronic components of the project
+<img src="./images/batteria.jpg" height="200px"> <br>
+
+* DIGITAL SERVO MOTOR MG995 <br>
+A digital motor that can turn to specific angles with high precision and strength, thanks to its metal gears. <br>
+<b>USE </b>: to move the locking mechanism of the door, allowing it to open and close automatically
+<img src="./images/servomotore.jpeg" height="200px"> <br>
+  
+* LM2596 STEP-DOWN CONVERTER <br>
+An electronic module that reduces a higher voltage to a lower and safer value. <br>
+<b>USE </b>: to make sure that the LiPo battery did not send too much voltage to the sensitive parts, like the controller and the servo motor.
+<img src="./images/step_down.jpg" height="200px"> <br>
+  
+* TEXAS INSTRUMENTS MSP432P401R MICROCONTROLLER
+  <img src="./images/MSP432.png" height="160px">
+   
+* 3D PRINTING <br>
+A process that creates plastic parts by adding one layer at a time, based on a digital design <br>
+<b>USE </b>: to make the custom parts that hold the motor, support the lock, and connect different parts of the door structure.
+  
+* LOCK, HANDLE, AND VARIOUS TOOLS FOR THE DOOR STRUCTURE <br>
+Mechanical parts like the lock and handle, plus tools used to assemble everything. <br>
+<b>USE </b>: to build the physical structure of the door and to install the system, making sure it worked properly and securely.
+
+
 ## DOCUMENTATION 
 
 ### LIBRARIES
