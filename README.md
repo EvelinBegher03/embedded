@@ -28,29 +28,32 @@ This project serves as a complete demonstration of human-machine interaction (HM
 
 ## REQUIREMENTS
 
-* HRB LIPO BATTERY <br>
+* <b>HRB LIPO BATTERY </b> <br>
 A rechargeable battery that provides electric power for the whole system. <br>
 <b>USE </b>: to power the servo motor, the voltage converter, and all the electronic components of the project
-<img src="./images/batteria.jpg" height="200px"> <br>
+<img src="./images/batteria.jpg" height="100px"> 
 
-* DIGITAL SERVO MOTOR MG995 <br>
+* <b>DIGITAL SERVO MOTOR MG995 </b><br>
 A digital motor that can turn to specific angles with high precision and strength, thanks to its metal gears. <br>
 <b>USE </b>: to move the locking mechanism of the door, allowing it to open and close automatically
-<img src="./images/servomotore.jpeg" height="200px"> <br>
+<img src="./images/servomotore.jpeg" height="200px"> 
   
-* LM2596 STEP-DOWN CONVERTER <br>
+* <b>LM2596 STEP-DOWN CONVERTER </b><br>
 An electronic module that reduces a higher voltage to a lower and safer value. <br>
-<b>USE </b>: to make sure that the LiPo battery did not send too much voltage to the sensitive parts, like the controller and the servo motor.
-<img src="./images/step_down.jpg" height="200px"> <br>
+<b>USE </b>: to make sure that the LiPo battery did not send too much voltage to the sensitive parts, like the controller and the servo motor. <br>
+<img src="./images/step_down.jpg" height="160px"> 
   
-* TEXAS INSTRUMENTS MSP432P401R MICROCONTROLLER
-  <img src="./images/MSP432.png" height="160px">
+* <b>TEXAS INSTRUMENTS MSP432P401R MICROCONTROLLER</b> <br>
+This is a small computer on a chip that controls the whole system.
+It reads signals, runs the program, and tells other parts what to do.
+<b>USE </b>:to manage the motor, read sensors, and control the door lock automatically. <br>
+<img src="./images/MSP432.png" height="130px">
    
-* 3D PRINTING <br>
+* <b>3D PRINTING </b> <br>
 A process that creates plastic parts by adding one layer at a time, based on a digital design <br>
 <b>USE </b>: to make the custom parts that hold the motor, support the lock, and connect different parts of the door structure.
   
-* LOCK, HANDLE, AND VARIOUS TOOLS FOR THE DOOR STRUCTURE <br>
+*  <b>LOCK, HANDLE, AND VARIOUS TOOLS FOR THE DOOR STRUCTURE </b> <br>
 Mechanical parts like the lock and handle, plus tools used to assemble everything. <br>
 <b>USE </b>: to build the physical structure of the door and to install the system, making sure it worked properly and securely.
 
@@ -99,6 +102,8 @@ Mechanical parts like the lock and handle, plus tools used to assemble everythin
 ## LINKS 
 * youtube: 
 * power point:
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
  
 
