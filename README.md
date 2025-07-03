@@ -45,8 +45,7 @@ An electronic module that reduces a higher voltage to a lower and safer value. <
 <img src="./images/step_down.jpg" height="160px"> 
   
 * <b>TEXAS INSTRUMENTS MSP432P401R MICROCONTROLLER</b> <br>
-This is a small computer on a chip that controls the whole system.
-It reads signals, runs the program, and tells other parts what to do.
+This is a small computer on a chip that controls the whole system.It reads signals, runs the program, and tells other parts what to do. <br>
 <b>USE </b>:to manage the motor, read sensors, and control the door lock automatically. <br>
 <img src="./images/MSP432.png" height="130px">
    
