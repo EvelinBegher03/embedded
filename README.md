@@ -58,10 +58,18 @@ This project serves as a complete demonstration of human-machine interaction (HM
 * <b>LIGHT_THRESHOLD</b>  &rarr; Ambient light threshold for day/night mode switching.
 
 ### FUNCTION
+
 ## PROJECT DESCRIPTION
 ### SYSTEM AND PERIPHERALS INITIALIZATION
 ### DYNAMIC DAY AND NIGHT MODE
 ### USER INTERFACE
 #### PIN
 #### KEYPAD
+
+## LINKS 
+* youtube: 
+* power point:
+
+ 
+
 
