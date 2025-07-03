@@ -27,9 +27,8 @@ This project serves as a complete demonstration of human-machine interaction (HM
 
 
 ## DOCUMENTATION 
-* ### LIBRARIES
-<br>
-
+### LIBRARIES
+#### Included libraries
 ```c
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 #include <ti/devices/msp432p4xx/inc/msp.h>
@@ -39,13 +38,30 @@ This project serves as a complete demonstration of human-machine interaction (HM
 #include <stdio.h>
 #include <string.h>
 ```
+  * <b>DriverLib & MSP headers </b> → Provide access to peripherals like GPIO, ADC, timers.
+  * <b>GRLib </b> → TI’s graphics library for drawing on the display.
+  * <b> OPT3001 HAL </b> → Interface for the ambient light sensor.
+  * <b> LCD Driver </b> → Manages the ST7735 128x128 color displa
 
-<br>
-* ### FUNCTION
+#### Constants and Configuration 
+```c
+#define CENTER     8192
+#define THRESHOLD  2000
+#define PIN_LENGTH 4
+#define MAX_LENGTH 6
+#define LIGHT_THRESHOLD 50
+```
+* <b>CENTER</b> &rarr; Neutral joystick ADC value.
+* <b>THRESHOLD</b>  &rarr; Dead zone to avoid accidental movements.
+* <b>PIN_LENGTH</b>  &rarr; Length of the correct PIN.
+* <b>MAX_LENGTH</b>  &rarr; Max characters buffer can hold (e.g., 4 + control chars like "x" or "E").
+* <b>LIGHT_THRESHOLD</b>  &rarr; Ambient light threshold for day/night mode switching.
+
+### FUNCTION
 ## PROJECT DESCRIPTION
-* ### SYSTEM AND PERIPHERALS INITIALIZATION
-* ### DYNAMIC DAY AND NIGHT MODE
-* ### USER INTERFACE
-  * #### PIN
-  * #### KEYPAD
+### SYSTEM AND PERIPHERALS INITIALIZATION
+### DYNAMIC DAY AND NIGHT MODE
+### USER INTERFACE
+#### PIN
+#### KEYPAD
 
