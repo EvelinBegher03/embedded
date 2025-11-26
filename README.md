@@ -5,7 +5,7 @@
 |--------------------|-----------|--------------------------------------|
 | Andrea Costantino  | 123456    | evelin.begher@studenti.unitn.it      |
 | Nicolo' Belle'     | 123456    | evelin.begher@studenti.unitn.it      |
-| Riccardo Bassan    | 123456    | evelin.begher@studenti.unitn.it      |
+| Riccardo Bassan    | 238793    | riccardo.bassan@studenti.unitn.it    |
 | Evelin Begher      | 235188    | evelin.begher@studenti.unitn.it      |
 
 ## Indice
