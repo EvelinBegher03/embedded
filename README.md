@@ -61,6 +61,7 @@ Mechanical parts like the lock and handle, plus tools used to assemble everythin
 ## DOCUMENTATION 
 
 ### LIBRARIES
+Provide the necessary interfaces to manage hardware peripherals, sensor communication, and graphical display functionality
 #### Included libraries
 ```c
 #include <ti/devices/msp432p4xx/driverlib/driverlib.h>
@@ -74,9 +75,9 @@ Mechanical parts like the lock and handle, plus tools used to assemble everythin
   * <b>DriverLib & MSP headers </b> → Provide access to peripherals like GPIO, ADC, timers.
   * <b>GRLib </b> → TI’s graphics library for drawing on the display.
   * <b> OPT3001 HAL </b> → Interface for the ambient light sensor.
-  * <b> LCD Driver </b> → Manages the ST7735 128x128 color displa
+  * <b> LCD Driver </b> → Manages the ST7735 128x128 color display
 
-#### Constants and Configuration 
+#### Constants and Configuration
 ```c
 #define CENTER     8192
 #define THRESHOLD  2000
@@ -91,10 +92,11 @@ Mechanical parts like the lock and handle, plus tools used to assemble everythin
 * <b>LIGHT_THRESHOLD</b>  &rarr; Ambient light threshold for day/night mode switching.
 
 ### FUNCTION
-
 ## PROJECT DESCRIPTION
+
 ### SYSTEM AND PERIPHERALS INITIALIZATION
 ### DYNAMIC DAY AND NIGHT MODE
+
 ### USER INTERFACE
 #### PIN
 #### KEYPAD
