@@ -94,7 +94,7 @@ Provide the necessary interfaces to manage hardware peripherals, sensor communic
 ### FUNCTION
 ## PROJECT DESCRIPTION
 
-### SYSTEM AND PERIPHERALS INITIALIZATIONì
+### SYSTEM AND PERIPHERALS INITIALIZATION
 This project was developed on **MSP432P401R LaunchPad** with the **Educational BoosterPack MKII**, using **Code Composer Studio (CCS) v12.8.1**.
 
 Main features:
