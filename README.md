@@ -94,7 +94,111 @@ Provide the necessary interfaces to manage hardware peripherals, sensor communic
 ### FUNCTION
 ## PROJECT DESCRIPTION
 
-### SYSTEM AND PERIPHERALS INITIALIZATION
+### SYSTEM AND PERIPHERALS INITIALIZATIONì
+This project was developed on **MSP432P401R LaunchPad** with the **Educational BoosterPack MKII**, using **Code Composer Studio (CCS) v12.8.1**.
+
+Main features:
+- LCD UI (keypad + selection with joystick)
+- BoosterPack sensors (OPT3001 light sensor, TMP006 temperature sensor)
+- Servo control with PWM
+- Buzzer feedback (errors / alarms)
+- State handling (door open/closed, feedback screens)
+
+---
+
+## Requirements
+
+### Hardware
+- TI **MSP432P401R LaunchPad**
+- **Educational BoosterPack MKII** (LCD, joystick, OPT3001, TMP006)
+- Servo motor (PWM on P2.4 / Timer_A0 CCR1) + proper power supply
+- USB connection for debug (XDS110 on-board)
+
+### Software
+- **Code Composer Studio (CCS) v12.8.1**
+- **SimpleLink MSP432 SDK** (used for driverlib + grlib)
+  - In this setup: `simplelink_msp432p4_sdk_3_40_01_02`
+
+> Note: library paths depend on your PC. If the SDK is installed in a different folder, you must update the project paths in CCS.
+
+---
+
+## CCS Installation (macOS / Windows)
+
+1. Install **Code Composer Studio 12.8.1**
+2. Install the device support for **MSP432P4xx**
+3. Install **SimpleLink MSP432 SDK** (driverlib + grlib)
+
+---
+
+## Import Project from ZIP
+
+1. Download the ZIP (GitHub → Code → Download ZIP)
+2. Unzip it
+3. Open CCS and choose a workspace (example: `~/workspace_v12`)
+4. Import the project:
+   - `Project → Import CCS Projects…`
+   - Select the unzipped project folder
+   - Check the project and click **Finish**
+5. Build:
+   - `Project → Build Project`
+
+If CCS cannot find some libraries, follow the section **Library / Include Configuration** below.
+
+---
+
+## Library / Include Configuration (IMPORTANT)
+
+This project uses external TI libraries (not only local source files), especially:
+- **driverlib** (MSP432P4xx)
+- **grlib** (Graphics Library for LCD/BoosterPack)
+- **CMSIS** headers (ARM core)
+
+These libraries come from the **SimpleLink MSP432 SDK**, so I had to add include paths and link libraries manually.
+
+### A) Include Options (header search path)
+Added paths (example from my PC):
+- `${CCS_BASE_ROOT}/...` (CCS base includes)
+- `${CG_TOOL_ROOT}/include` (TI toolchain includes)
+- `${CG_TOOL_ROOT}/arm/include/CMSIS` (CMSIS)
+- `<SDK_PATH>/source/ti/grlib` (grlib headers)
+- `<SDK_PATH>/source` (generic SDK includes)
+
+In CCS:
+- `Project → Properties → Arm Compiler → Include Options`
+- add the paths listed above
+
+### B) Linker → File Search Path (libraries .lib / .a)
+The project links these libraries:
+- `grlib.a`
+- `msp432p4xx_driverlib.lib` (MSP432 driverlib)
+
+In CCS:
+- `Project → Properties → Arm Linker → File Search Path`
+- add the library files, typically:
+  - `<SDK_PATH>/source/ti/grlib/lib/ccs/m4/grlib.a`
+  - `<SDK_PATH>/source/ti/devices/msp432p4xx/driverlib/ccs/msp432p4xx_driverlib.lib`
+
+> If your SDK is installed in a different path:
+> - update `<SDK_PATH>` in the settings above
+> - or reinstall the SDK in a known location
+
+---
+
+## Run / Debug
+
+1. Connect the LaunchPad via USB
+2. `Run → Debug`
+3. CCS will flash the program automatically
+4. Press `Resume` to run
+
+---
+
+## Notes
+- Servo PWM is generated using Timer_A on **P2.4**
+- BoosterPack sensors use I2C (OPT3001 / TMP006)
+
+
 ### DYNAMIC DAY AND NIGHT MODE
 
 ### USER INTERFACE
