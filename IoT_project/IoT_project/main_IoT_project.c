@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdint.h>
 
+// Hardware pin mapping
 #define CENTER     8192
 #define THRESHOLD  2000
 #define PIN_LENGTH 1
@@ -20,10 +21,10 @@
 #define S2_PORT GPIO_PORT_P3
 #define S2_PIN  GPIO_PIN5
 #define JOY_SW_PORT GPIO_PORT_P4
-#define JOY_SW_PIN  GPIO_PIN1   // J1.5 -> P4.1 (joystick press) (penso per rilevare se qualcuno scuote)
+#define JOY_SW_PIN  GPIO_PIN1
 
-//memoria per il salvataggio dello stato della porta nella flash
-#define DOOR_NVM_ADDR   ((uint32_t)0x0003F000)  // ultima pagina 4KB (256KB flash)
+// Flash memory record used to persist the door state
+#define DOOR_NVM_ADDR   ((uint32_t)0x0003F000)
 #define DOOR_NVM_MAGIC  ((uint32_t)0xD00A5A7E)
 
 typedef enum
@@ -35,7 +36,7 @@ typedef enum
     DIRECTION_RIGHT
 } JoystickDirection;
 
-//stato della porta
+// Door state
 typedef enum
 {
     DOOR_CLOSED = 0, DOOR_OPEN = 1
@@ -46,10 +47,10 @@ static DoorState doorState = DOOR_CLOSED;
 typedef struct {
     uint32_t magic;
     uint32_t state;   // 0 = closed, 1 = open
-    uint32_t inv;     // ~state (check semplice)
+    uint32_t inv;
 } DoorNvmRecord;
 
-//timer
+// Time base and helper utilities
 static volatile uint32_t g_ms = 0;
 static void initSysTickMs(void);
 void SysTick_Handler(void);
@@ -59,6 +60,7 @@ static uint8_t p51Prev = 1;
 static uint32_t p51DebounceUntil = 0;
 static uint8_t p51PressedEvent = 0;
 
+// Buzzer state machine
 typedef enum
 {
     BUZ_IDLE = 0, BUZ_ERR, BUZ_SHAKE
@@ -69,11 +71,12 @@ static uint32_t buzNextToggleMs = 0;
 static uint32_t buzEndPhaseMs = 0;
 static uint8_t buzPhase = 0;
 
-//task timer
+// Task timer for buzzer button
 static void buzzerTask(void);
 static void p51Task(void);
 static uint8_t p51ConsumePressedEvent(void);
 
+// Servo state machine
 typedef enum
 {
     SERVO_IDLE = 0, SERVO_OPEN_RUN, SERVO_OPEN_BRAKE, SERVO_CLOSE_RUN
@@ -90,7 +93,7 @@ typedef enum
 } AppState;
 
 bool prevIsDay = true;
-// PIN corretto
+// Correct PIN
 static const char correctPIN[PIN_LENGTH + 1] = "1";
 
 Graphics_Context g_sContext;
@@ -105,18 +108,18 @@ int pinIndex = 0;
 int attemptCount = 0;
 
 AppState currentState = STATE_IDLE;
-int lastFeedbackShown = 0; // 0=nessuno, 1=CORRETTO, 2=ERRATO, 3=LUNGHEZZA ERRATA, 4=TROPPI CARATTERI
+int lastFeedbackShown = 0; // 0=none, 1=CORRECT, 2=INCORRECT, 3=WRONG LENGTH, 4=TOO MANY CHARS
 
-// Coordinate del tastierino
+// Keypad coordinates for drawing
 int keyX[3] = { 32, 64, 96 };
 int keyY[4] = { 40, 65, 90, 115 };
 
 char keys[4][3] = { { '1', '2', '3' }, { '4', '5', '6' }, { '7', '8', '9' }, {
         'X', '0', 'E' } };
 
-// Font disponibili
-extern const tFont g_sFontFixed6x8;   // Font piccolo
-extern const tFont g_sFontCmss20b;    // Font grande
+// Font available for display
+extern const tFont g_sFontFixed6x8;   // Small font
+extern const tFont g_sFontCmss20b;    // Large font
 
 void brightnessSensor(uint16_t lightValue);
 void initSystem(void);
@@ -145,7 +148,7 @@ void returnToInitial(void);
 bool inputAvailable(void);
 void processInputDuringFeedback(void);
 
-//apertura e chiusura porta
+// Door open/close control
 static void servoTask(void);
 static void s2Task(void);
 static void servoOpenFull(void);
@@ -154,11 +157,12 @@ static void servoCloseFull(void);
 static void loadDoorStateFromFlash(void);
 static void saveDoorStateToFlash(DoorState st);
 
-//controllo temperatura
+// Temperature display
 static void showWelcomeTemp(void);
 
 int main(void)
 {
+    // System and peripheral initialization
     initSystem();
     loadDoorStateFromFlash();
     initBuzzer();
@@ -166,39 +170,39 @@ int main(void)
     initDisplay();
     initButton();
 
-    // Configura il clock a 3 MHz
+    // Set up system clock to 3 MHz
     CS_setDCOCenteredFrequency(CS_DCO_FREQUENCY_3);
     CS_initClockSignal(CS_SMCLK, CS_DCOCLK_SELECT, CS_CLOCK_DIVIDER_1);
 
-    //init timer
+    // Initialize timer for 1 ms time base
     initSysTickMs();
 
-    // Pin P2.4 per PWM
+    // Configure P2.4 for PWM output to servo
     GPIO_setAsPeripheralModuleFunctionOutputPin(GPIO_PORT_P2,
     GPIO_PIN4,
                                                 GPIO_PRIMARY_MODULE_FUNCTION);
 
-    // PWM a 50 Hz
+    // PWM at 50 Hz for servo
     Timer_A_PWMConfig pwmConfig = {
     TIMER_A_CLOCKSOURCE_SMCLK,
                                     TIMER_A_CLOCKSOURCE_DIVIDER_3, 20000, // 20 ms
                                     TIMER_A_CAPTURECOMPARE_REGISTER_1,
                                     TIMER_A_OUTPUTMODE_RESET_SET,
-                                    1500    // 1.5 ms => fermo
+                                    1500    // 1.5 ms = neutral position
             };
 
     Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
-    drawInitialScreen(); // Disegna tutto all'inizio
+    drawInitialScreen(); // Draw initial UI
 
+    // Main control loop
     while (1)
-
     {
         buzzerTask();
         p51Task();
-        //chiusura porta
-        s2Task();
-        servoTask();
+        s2Task();       // Door close button
+        servoTask();    // Servo state machine
 
+        // Sample ADC channels for joystick and accelerometer
         ADC14_toggleConversionTrigger();
         while (ADC14_isBusy())
             ;
@@ -211,14 +215,13 @@ int main(void)
         checkTamper(accX, accY, accZ);
 
         uint16_t lightValue = OPT3001_getLux();
-        ;
 
-        // Ora chiama brightnessSensor con il valore letto
         brightnessSensor(lightValue);
 
         if (currentState == STATE_IDLE)
         {
 
+            // Handle keypad navigation and selection via joystick
             readJoystick();
             JoystickDirection currentDir = getJoystickDirection(xValue, yValue);
             if (currentDir != DIRECTION_NEUTRAL
@@ -264,42 +267,42 @@ int main(void)
         else if (currentState == STATE_FEEDBACK)
         {
 
-            // aspetta input
+            // Wait for user input
             processInputDuringFeedback();
 
         }
         else if (currentState == STATE_BLOCKED)
         {
-
-            // bloccato
+            // Blocked
         }
 
         if (currentState == STATE_WELCOME)
         {
+            //Welcome state
             if ((int32_t) (g_ms - welcomeUntilMs) >= 0)
             {
                 returnToInitial();
                 currentState = STATE_IDLE;
             }
-            // mentre sei in welcome, non processare tastierino
-            // ma lascia andare servoTask() e s2Task()
+            // While in welcome, keypad input is ignored but servoTask() and S2Task() run
         }
 
     }
 }
-//fa l init del sistema in poche parole lo toglie dalla low power mode che non ho ancora capito che cazzo è
+// Initialize system: disables watchdog timer and exits low power mode
 void initSystem(void)
 {
     WDT_A_holdTimer();
 }
 
+// Initialize the buzzet GPIO as output and set it low
 static void initBuzzer(void)
 {
     GPIO_setAsOutputPin(BUZZER_PORT, BUZZER_PIN);
     GPIO_setOutputLowOnPin(BUZZER_PORT, BUZZER_PIN);
 }
 
-//inizializza il display dai driver e setta orientamento e altre cazzate
+// Initialize the LCD display
 void initDisplay(void)
 {
     Crystalfontz128x128_Init();
@@ -308,10 +311,10 @@ void initDisplay(void)
                          &g_sCrystalfontz128x128_funcs);
     Graphics_setForegroundColor(&g_sContext, textColor);
     Graphics_setBackgroundColor(&g_sContext, backGroundColor);
-    Graphics_setFont(&g_sContext, &g_sFontFixed6x8); // font piccolo
+    Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
     Graphics_clearDisplay(&g_sContext);
 }
-//sto schifo è l inizializzazione del jopystick
+// Initialize ADC channels for joystick, accelerometer and I2C sensors
 void initADC(void)
 {
 
@@ -320,7 +323,7 @@ void initADC(void)
     GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P4, GPIO_PIN4,
     GPIO_TERTIARY_MODULE_FUNCTION); // Y
 
-    // Accelerometro (ADC A14, A13, A11)
+    // Accelerometer (ADC A14, A13, A11)
     GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P6, GPIO_PIN1,
     GPIO_TERTIARY_MODULE_FUNCTION); // A14
     GPIO_setAsPeripheralModuleFunctionInputPin(GPIO_PORT_P4, GPIO_PIN0,
@@ -351,25 +354,25 @@ void initADC(void)
     ADC14_enableSampleTimer(ADC_MANUAL_ITERATION);
     ADC14_enableConversion();
 
-    // Configura pin sensore luce
+    // Initialize light sensor PIN
     Init_I2C_GPIO();
     I2C_init();
 
-    /* Initialize OPT3001 digital ambient light sensor */
+    // Initialize OPT3001 digital ambient light sensor
     OPT3001_init();
 
-    //sensore di temperatura
+    // Initialize temperature sensor
     TMP006_init();
 }
 
-//init del buttone
+// Initialize button
 void initButton(void)
 {
     P5->DIR &= ~BIT1;
     P5->REN |= BIT1;
     P5->OUT |= BIT1;
 }
-//questa funzione serve a leggere dai due pin la posizione del joystic
+// Read joystick X and Y values and store in global variables
 void readJoystick(void)
 {
     ADC14_toggleConversionTrigger();
@@ -378,10 +381,10 @@ void readJoystick(void)
     xValue = ADC14_getResult(ADC_MEM0);
     yValue = ADC14_getResult(ADC_MEM1);
 }
-//init timer
+// Initialize timer
 static void initSysTickMs(void)
 {
-    // con DCO=3MHz, SysTick a 1ms => 3000 tick
+    // with DCO=3MHz, SysTick at 1ms => 3000 tick
     SysTick->LOAD = (3000 - 1);
     SysTick->VAL = 0;
     SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk |
@@ -389,6 +392,7 @@ static void initSysTickMs(void)
     SysTick_CTRL_ENABLE_Msk;
 }
 
+// Interrupt handler
 void SysTick_Handler(void)
 {
     g_ms++;
@@ -399,66 +403,64 @@ static inline int32_t timePassed(uint32_t now, uint32_t deadline)
     return (int32_t) (now - deadline) >= 0;
 }
 
-// gestione dei suoni di errore
+// Buzzer state machine for error feedback
 static void buzzerTask(void)
 {
     if (buzMode == BUZ_IDLE)
         return;
 
-    // toggle a cadenza (regola qui il tono)
+    // toggle cadence
     if (timePassed(g_ms, buzNextToggleMs))
     {
         GPIO_toggleOutputOnPin(BUZZER_PORT, BUZZER_PIN);
 
-        // frequenze: 1ms -> 500Hz toggle, 0.5ms non possibile con ms tick, quindi scegli 1-2ms
+        // frequences: 1ms -> 500Hz toggle
         buzNextToggleMs = g_ms + 1;
     }
 
-    // fine fase?
     if (!timePassed(g_ms, buzEndPhaseMs))
         return;
 
-    // spegni pin tra fasi
+    // Turn off pin between phases
     GPIO_setOutputLowOnPin(BUZZER_PORT, BUZZER_PIN);
 
     if (buzMode == BUZ_ERR)
     {
-        // Sequenza: beep corto, pausa, beep corto
+        // Sequence: short beep, pause, short beep
         if (buzPhase == 0)
         {
             buzPhase = 1;
             buzEndPhaseMs = g_ms + 200;
             return;
-        } // pausa 200ms
+        } // pause 200ms
         if (buzPhase == 1)
         {
             buzPhase = 2;
             buzEndPhaseMs = g_ms + 120;
             buzNextToggleMs = g_ms;
             return;
-        } // secondo beep
+        } // second beep
         buzMode = BUZ_IDLE;
         return;
     }
 
     if (buzMode == BUZ_SHAKE)
     {
-        // Sequenza semplice: lungo, pausa, corto, ripeti 2 volte
-        // Per restare breve: 2 cicli
+        // Sequence: long, pause, short, repeat 2 times
         static uint8_t reps = 0;
         if (buzPhase == 0)
         {
             buzPhase = 1;
             buzEndPhaseMs = g_ms + 200;
             return;
-        }      // pausa
+        }      // pause
         if (buzPhase == 1)
         {
             buzPhase = 2;
             buzEndPhaseMs = g_ms + 150;
             buzNextToggleMs = g_ms;
             return;
-        } // beep corto
+        } // short beep
         reps++;
         if (reps < 2)
         {
@@ -473,6 +475,7 @@ static void buzzerTask(void)
     }
 }
 
+// Button P5.1 polling and debouncing task
 static void p51Task(void)
 {
     uint8_t now = ((P5->IN & BIT1 ) ? 1 : 0); // 1 = non premuto (pull-up), 0 = premuto
@@ -483,16 +486,16 @@ static void p51Task(void)
         return;
     }
 
-    // fronte 1 -> 0 = pressione
     if (p51Prev == 1 && now == 0)
     {
         p51PressedEvent = 1;
-        p51DebounceUntil = g_ms + 200; // 200ms (equivale a 2*100ms che avevi)
+        p51DebounceUntil = g_ms + 200;
     }
 
     p51Prev = now;
 }
 
+// Consumes and returns the button pressed event
 static uint8_t p51ConsumePressedEvent(void)
 {
     if (p51PressedEvent)
@@ -503,7 +506,7 @@ static uint8_t p51ConsumePressedEvent(void)
     return 0;
 }
 
-// praticamente questa toglie la zona morta e legge semplicemente da che parte è stato mosso, perchè prima proprio leggeva le coordinate come fosse un mouse tipo
+// Return the joystick direction based on X/Y ADC readings
 JoystickDirection getJoystickDirection(uint16_t x, uint16_t y)
 {
     if (y > CENTER + THRESHOLD)
@@ -516,7 +519,7 @@ JoystickDirection getJoystickDirection(uint16_t x, uint16_t y)
         return DIRECTION_LEFT;
     return DIRECTION_NEUTRAL;
 }
-//disegna schermo iniziale
+// Draws the initial screen
 void drawInitialScreen(void)
 {
 
@@ -532,7 +535,7 @@ void drawInitialScreen(void)
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
     drawKeyAt(selectedRow, selectedCol, true);
 }
-// Disegna il tastierino
+// Draws the keypad
 void drawKeypad(void)
 {
     int r, c;
@@ -544,7 +547,7 @@ void drawKeypad(void)
         }
     }
 }
-//colora di rosso il numero in cui ci troviamo
+// Draw the keypad key selected
 void drawKeyAt(int row, int col, bool selected)
 {
     Graphics_setFont(&g_sContext, &g_sFontCmss20b);
@@ -564,7 +567,7 @@ void drawKeyAt(int row, int col, bool selected)
                                 OPAQUE_TEXT);
     Graphics_setForegroundColor(&g_sContext, textColor);
 }
-//aggiorna il numero in cui ci troviamo
+// Updated the keypad selection
 void updateSelectedKey(int oldRow, int oldCol, int newRow, int newCol)
 {
     Graphics_setBackgroundColor(&g_sContext, backGroundColor);
@@ -573,7 +576,7 @@ void updateSelectedKey(int oldRow, int oldCol, int newRow, int newCol)
     drawKeyAt(newRow, newCol, true);
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
 }
-//Mostra l area del pin prima cancellandola e poi riscrivendo (sarà un bel casino se vogliamo usare anche il sensore di lum
+// Shows the "PIN:" label on the display, cleaning its area
 void showPinLabel(void)
 {
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
@@ -585,7 +588,7 @@ void showPinLabel(void)
     Graphics_drawString(&g_sContext, (int8_t*) "PIN:", AUTO_STRING_LENGTH, 20,
                         10, OPAQUE_TEXT);
 }
-// pezzo dove viene effettivamente inserito il pin
+// Displays the currently entered PIN digits
 void showPin(void)
 {
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
@@ -603,7 +606,7 @@ void showPin(void)
                             10, OPAQUE_TEXT);
     }
 }
-// mostra area di dove viene mostrato il feedback
+// Shows a feedback message at the top of the display
 void showFeedback(const char *msg)
 {
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
@@ -615,7 +618,7 @@ void showFeedback(const char *msg)
     Graphics_drawStringCentered(&g_sContext, (int8_t*) msg, AUTO_STRING_LENGTH,
                                 64, 10, OPAQUE_TEXT);
 }
-//pulisce l area feedback
+// Clears the feedback area
 void clearFeedback(void)
 {
     Graphics_setBackgroundColor(&g_sContext, backGroundColor);
@@ -624,24 +627,24 @@ void clearFeedback(void)
                            &(Graphics_Rectangle ) { 0, 0, 127, 5 });
     Graphics_setForegroundColor(&g_sContext, textColor);
 }
-
+// Start an error beep sequence on the buzzer
 static void beepError(void)
 {
     buzMode = BUZ_ERR;
     buzPhase = 0;
-    buzNextToggleMs = g_ms;          // inizia subito
-    buzEndPhaseMs = g_ms + 120; // 120ms di beep (simile a 120 toggle con delay ~1k cycles)
+    buzNextToggleMs = g_ms;
+    buzEndPhaseMs = g_ms + 120;
 }
-
+// Starts a shake beep sequence on the buzzer
 static void beepShake(void)
 {
     buzMode = BUZ_SHAKE;
     buzPhase = 0;
     buzNextToggleMs = g_ms;
-    buzEndPhaseMs = g_ms + 300;      // beep lungo
+    buzEndPhaseMs = g_ms + 300;
 }
 
-//qui praticamente prende il carattere corrispondente a dove ci troviamo con il cursore e lo aggiunge al pin se è un numero da 0 a 9 mentre se è x canxella dal vet e se è e fa l inserimento
+// Handles the character selected on the keypad
 void handleSelectedChar(char c)
 {
     if (currentState != STATE_IDLE)
@@ -687,7 +690,7 @@ void handleSelectedChar(char c)
         }
     }
 }
-// funzione che controlla se il pin è giusto
+// Checks if the PIN is correct
 void checkPIN(void)
 {
     bool correct = (strcmp(enteredPIN, correctPIN) == 0);
@@ -695,8 +698,8 @@ void checkPIN(void)
     {
         showWelcomeTemp();
         currentState = STATE_WELCOME;
-        welcomeUntilMs = g_ms + 5000;   // 5 secondi
-        onPinCorrect();                 // avvia servo non bloccante
+        welcomeUntilMs = g_ms + 5000;
+        onPinCorrect();
         return;
     }
     else
@@ -718,7 +721,7 @@ void checkPIN(void)
     }
 }
 
-// se il pin è corretto
+// Called when PIN is correct
 static void onPinCorrect(void)
 {
 
@@ -734,6 +737,7 @@ static void onPinCorrect(void)
     }
 }
 
+// Checks for shake events using accelerometer readings
 static void checkTamper(uint16_t ax, uint16_t ay, uint16_t az)
 {
     if (doorState)
@@ -743,7 +747,6 @@ static void checkTamper(uint16_t ax, uint16_t ay, uint16_t az)
     static uint8_t accInit = 0;
     int32_t dx, dy, dz;
 
-    // inizializzazione (prima lettura)
     if (!accInit)
     {
         accX_prev = ax;
@@ -753,7 +756,6 @@ static void checkTamper(uint16_t ax, uint16_t ay, uint16_t az)
         return;
     }
 
-    // cooldown per evitare suono continuo
     if (shakeCooldown)
     {
         shakeCooldown--;
@@ -763,7 +765,6 @@ static void checkTamper(uint16_t ax, uint16_t ay, uint16_t az)
         return;
     }
 
-    // variazione rapida = manomissione
     dx = (int32_t) ax - accX_prev;
     if (dx < 0)
         dx = -dx;
@@ -778,63 +779,55 @@ static void checkTamper(uint16_t ax, uint16_t ay, uint16_t az)
     accY_prev = ay;
     accZ_prev = az;
 
-    // soglia: tarala una volta e basta
-    // 800–1200 → apertura porta OK
-    // >1500 → strattonata / colpo
     if (dx > 1500 || dy > 1500 || dz > 1500)
     {
-        beepShake();        // allarme manomissione
+        beepShake();
         shakeCooldown = 100;
     }
 }
 
-// cambia lo schermo da bianco a nero e viceversa
+// Handles ambient light theme switching
 void brightnessSensor(uint16_t lightValue)
 {
-    // Determina se è giorno o notte
+    
     bool isDay = (lightValue >= LIGHT_THRESHOLD);
 
-    // Se lo stato è cambiato rispetto al ciclo precedente, aggiorna i colori e ridisegna
     if (isDay != prevIsDay)
     {
         if (!isDay)
         {
-            // notte -> schermo nero
             textColor = GRAPHICS_COLOR_WHITE;
             backGroundColor = GRAPHICS_COLOR_BLACK;
         }
         else
         {
-            // giorno -> schermo bianco
             textColor = GRAPHICS_COLOR_BLACK;
             backGroundColor = GRAPHICS_COLOR_WHITE;
         }
 
-        // Aggiorna i colori del contesto
+        // Update context colors
         Graphics_setForegroundColor(&g_sContext, textColor);
         Graphics_setBackgroundColor(&g_sContext, backGroundColor);
 
-        // Ridisegna schermo solo al cambio di condizione
         if (currentState == STATE_IDLE)
         {
             drawInitialScreen();
         }
 
-        // Aggiorna lo stato precedente
+        // Update the state
         prevIsDay = isDay;
     }
-
-    // Se non è cambiato nulla, non fare niente: nessun refresh dello schermo
 }
 
-// resetta il pin ogni volta che viene premuta la e
+// Resets the entered PIN buffer and updates display
 void resetPIN(void)
 {
     pinIndex = 0;
     memset(enteredPIN, 0, sizeof(enteredPIN));
     showPin();
 }
-//resetta lo schermo come allinizio
+
+// Returns the UI to the initial state
 void returnToInitial(void)
 {
     drawInitialScreen();
@@ -842,42 +835,40 @@ void returnToInitial(void)
     currentState = STATE_IDLE;
 }
 
-//qui avevo problemi con la selezione dei numeri perchè era troppo sensibile e quindi ho messo che si può fare uno spostamento alla volta non tipo tenendo piegato il L3
+// Returns true if keypad or button input is available
 bool inputAvailable(void)
 {
     if (p51PressedEvent)
-        return true; // Joystick: evento solo su transizione NEUTRAL -> direzione
+        return true;
     static JoystickDirection prevDirFB = DIRECTION_NEUTRAL;
 
     readJoystick();
     JoystickDirection currentDir = getJoystickDirection(xValue, yValue);
 
-    // Edge: valido solo quando esco dal neutro
     if (prevDirFB == DIRECTION_NEUTRAL && currentDir != DIRECTION_NEUTRAL)
     {
-        prevDirFB = currentDir;   // latch finché non torni neutro
+        prevDirFB = currentDir;
         return true;
     }
 
-    // reset latch quando torna neutro
     if (currentDir == DIRECTION_NEUTRAL)
     {
         prevDirFB = DIRECTION_NEUTRAL;
     }
 
-    // Pulsante P5.1: non bloccante (evento generato da p51Task())
     if (p51PressedEvent)
         return true;
 
     return false;
 }
-//check di quale feedback stampare
+
+// Handles user input during feedback state
 void processInputDuringFeedback(void)
 {
     if (currentState == STATE_FEEDBACK && inputAvailable())
     {
         if (lastFeedbackShown == 1)
-        { // CORRETTO
+        { // CORRECT
             attemptCount = 0;
             returnToInitial();
         }
@@ -889,24 +880,21 @@ void processInputDuringFeedback(void)
                 returnToInitial();
             }
         }
-        //bloccato
     }
 }
 
-//task del servo
+// Handles servo position transitions
 static void servoTask(void)
 {
     if (servoPhase == SERVO_IDLE)
         return;
 
-    // scadenza raggiunta?
     if ((int32_t) (g_ms - servoDeadlineMs) < 0)
         return;
 
     switch (servoPhase)
     {
     case SERVO_OPEN_RUN:
-        // fase brake come nel tuo codice: 1900 per 1000ms
         Timer_A_setCompareValue(TIMER_A0_BASE,
         TIMER_A_CAPTURECOMPARE_REGISTER_1,
                                 1900);
@@ -915,7 +903,6 @@ static void servoTask(void)
         break;
 
     case SERVO_OPEN_BRAKE:
-        // torna neutro
         Timer_A_setCompareValue(TIMER_A0_BASE,
         TIMER_A_CAPTURECOMPARE_REGISTER_1,
                                 1500);
@@ -923,12 +910,11 @@ static void servoTask(void)
         break;
 
     case SERVO_CLOSE_RUN:
-        // fine chiusura -> neutro
         Timer_A_setCompareValue(TIMER_A0_BASE,
         TIMER_A_CAPTURECOMPARE_REGISTER_1,
                                 1500);
         servoPhase = SERVO_IDLE;
-        doorState = DOOR_CLOSED;     // chiusura completata
+        doorState = DOOR_CLOSED;
         saveDoorStateToFlash(doorState);
         break;
 
@@ -938,45 +924,42 @@ static void servoTask(void)
     }
 }
 
+// Handles debouncing and starts door close if pressed
 static void s2Task(void)
 {
     static uint8_t s2Prev = 1;
     static uint32_t s2DebounceUntil = 0;
-    uint8_t s2Now = GPIO_getInputPinValue(S2_PORT, S2_PIN); // 1 = non premuto, 0 = premuto
+    uint8_t s2Now = GPIO_getInputPinValue(S2_PORT, S2_PIN);
 
-    // debounce temporale
     if ((int32_t) (g_ms - s2DebounceUntil) < 0)
     {
         s2Prev = s2Now;
         return;
     }
 
-    // rilevo fronte 1->0 (pressione)
     if (s2Prev == 1 && s2Now == 0)
     {
-        s2DebounceUntil = g_ms + 200; // 200ms debounce
+        s2DebounceUntil = g_ms + 200;
 
         if (doorState == DOOR_OPEN && servoPhase == SERVO_IDLE)
         {
             servoCloseFull();
-            // doorState diventa CLOSED quando il servo finisce (in servoTask)
         }
     }
 
     s2Prev = s2Now;
 }
 
-//apertura porta totale
+// Starts full door open sequence on the servo
 static void servoOpenFull(void)
 {
-    // avvio apertura “lunga”
     Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1,
                             1100);
     servoPhase = SERVO_OPEN_RUN;
     servoDeadlineMs = g_ms + 6667;   // 20,000,000 cycles @3MHz ≈ 6667ms
 }
 
-//apertura porta parziale
+// Starts partial door open sequence on the servo
 static void servoOpenNudge(void)
 {
     Timer_A_setCompareValue(TIMER_A0_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_1,
@@ -985,7 +968,7 @@ static void servoOpenNudge(void)
     servoDeadlineMs = g_ms + 3333;   // 10,000,000 cycles @3MHz ≈ 3333ms
 }
 
-//chiusura porta
+// Starts full door close sequence on the servo
 static void servoCloseFull(void)
 {
     // S2 premuto = LOW
@@ -1004,7 +987,7 @@ static void servoCloseFull(void)
     }
 }
 
-//load dalla flash dello stato della porta
+// Loads door state from flash memory
 static void loadDoorStateFromFlash(void)
 {
     const DoorNvmRecord *rec = (const DoorNvmRecord *)DOOR_NVM_ADDR;
@@ -1015,11 +998,11 @@ static void loadDoorStateFromFlash(void)
     }
     else
     {
-        doorState = DOOR_CLOSED; // default se flash vuota/sporca
+        doorState = DOOR_CLOSED;
     }
 }
 
-//salvataggio nella flash dello stato della porta
+// Saves door state to flash memory
 static void saveDoorStateToFlash(DoorState st)
 {
     DoorNvmRecord rec;
@@ -1027,22 +1010,19 @@ static void saveDoorStateToFlash(DoorState st)
     rec.state = (st == DOOR_OPEN) ? 1u : 0u;
     rec.inv   = ~rec.state;
 
-    // Erase pagina e poi scrivi (pochi byte)
-    FlashCtl_unprotectSector(FLASH_MAIN_MEMORY_SPACE_BANK1, FLASH_SECTOR31); // vedi nota sotto
+    FlashCtl_unprotectSector(FLASH_MAIN_MEMORY_SPACE_BANK1, FLASH_SECTOR31);
     FlashCtl_eraseSector(DOOR_NVM_ADDR);
     FlashCtl_programMemory((void *)&rec, (void *)DOOR_NVM_ADDR, sizeof(rec));
     FlashCtl_protectSector(FLASH_MAIN_MEMORY_SPACE_BANK1, FLASH_SECTOR31);
 }
 
-//benvenuto con temperatura
+// Displays welcome screen with temperature reading
 static void showWelcomeTemp(void)
 {
-    // Leggi temperatura “ambient/die” dal TMP006 in °C
     int raw = TMP006_readAmbientTemperature();
     raw >>= 2;
     float tC = (float) raw * 0.03125f;
 
-    // 1 decimale senza %f
     int t10 = (int) (tC * 10.0f);
     int whole = t10 / 10;
     int frac = t10 % 10;
@@ -1050,30 +1030,29 @@ static void showWelcomeTemp(void)
         frac = -frac;
 
     char tempStr[24];
-    // formato: "23.4 C" (se vuoi il simbolo ° dimmelo e lo metto)
     snprintf(tempStr, sizeof(tempStr), "%d.%d C", whole, frac);
 
-    // --- SCHERMO INTERO ---
+    // Full screen
     Graphics_setBackgroundColor(&g_sContext, backGroundColor);
     Graphics_setForegroundColor(&g_sContext, textColor);
     Graphics_clearDisplay(&g_sContext);
 
-    // Titolo grande
+    // Big title
     Graphics_setFont(&g_sContext, &g_sFontCmss20b);
     Graphics_drawStringCentered(&g_sContext, (int8_t*) "BENVENUTO",
     AUTO_STRING_LENGTH,
                                 64, 28, OPAQUE_TEXT);
 
-    // Linea
+    // Line
     Graphics_drawLineH(&g_sContext, 16, 112, 48);
 
-    // Label piccola
+    // Small label
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
     Graphics_drawStringCentered(&g_sContext, (int8_t*) "Temperatura interna:",
     AUTO_STRING_LENGTH,
                                 64, 68, OPAQUE_TEXT);
 
-    // Temp grande
+    // Big temp
     Graphics_setFont(&g_sContext, &g_sFontCmss20b);
     Graphics_drawStringCentered(&g_sContext, (int8_t*) tempStr,
     AUTO_STRING_LENGTH,
@@ -1081,6 +1060,6 @@ static void showWelcomeTemp(void)
 
     Graphics_setFont(&g_sContext, &g_sFontFixed6x8);
 
-    welcomeUntilMs = g_ms + 5000;   // 5 secondi
+    welcomeUntilMs = g_ms + 5000;
     currentState = STATE_WELCOME;
 }
