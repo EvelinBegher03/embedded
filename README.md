@@ -42,7 +42,7 @@ A digital motor that can turn to specific angles with high precision and strengt
 * <b>LM2596 STEP-DOWN CONVERTER </b><br>
 An electronic module that reduces a higher voltage to a lower and safer value. <br>
 <b>USE </b>: to make sure that the LiPo battery did not send too much voltage to the sensitive parts, like the controller and the servo motor. <br>
-<img src="./images/step_down.jpg" height="160px"> 
+<img src="./images/step_down.png" height="160px"> 
   
 * <b>TEXAS INSTRUMENTS MSP432P401R MICROCONTROLLER</b> <br>
 This is a small computer on a chip that controls the whole system.It reads signals, runs the program, and tells other parts what to do. <br>
