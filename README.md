@@ -190,13 +190,13 @@ In CCS:
 - BoosterPack sensors use I2C (OPT3001 / TMP006)
 
 ### HARDWARE SIZE
-Below are the connections we set up to complete this project:
-<img src="./images/Blank_board.jpeg" height="160px"> 
+Below are the connections we set up to complete this project:<br>
+<img src="./images/Blank_board.jpeg" height="350px"> 
 
 
 ## LINKS 
-* youtube: 
-* power point:
+## [youtube:]()
+## [power point:]()
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
