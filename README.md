@@ -13,13 +13,14 @@
 - [requirements](#requirements) 
 - [documentation](#documentation)
   - [libraries](#libraries)
-  - [function](#function)
 -  [project description](#project-description)
-- [system and peripherals initialization](#system-and-peripherals-initialization)
-- [dynamic day and night mode](#dynamic-day-and-night-mode)
-- [user interface](#user-interface)
-  - [pin](#pin)
-  - [keypad](#keypad)
+  - [system and peripherals initialization](#system-and-peripherals-initialization)
+  - [Requirements](#Requirements)
+  - [CCS Installation (macOS / Windows)](#CCS-Installation-(macOS-/-Windows))
+  - [Import Project from ZIP](#Import-Project-from-ZIP)
+  - [Library / Include Configuration (IMPORTANT)](#Library-/-Include-Configuration-(IMPORTANT))
+  - [Run / Debug](#Run-/-Debug)
+  - [Notes](#Notes)
 
 ## PROJECT OVERVIEW
 <br>
@@ -91,7 +92,6 @@ Provide the necessary interfaces to manage hardware peripherals, sensor communic
 * <b>MAX_LENGTH</b>  &rarr; Max characters buffer can hold (e.g., 4 + control chars like "x" or "E").
 * <b>LIGHT_THRESHOLD</b>  &rarr; Ambient light threshold for day/night mode switching.
 
-### FUNCTION
 ## PROJECT DESCRIPTION
 
 ### SYSTEM AND PERIPHERALS INITIALIZATION
@@ -104,34 +104,30 @@ Main features:
 - Buzzer feedback (errors / alarms)
 - State handling (door open/closed, feedback screens)
 
----
 
-## Requirements
+### Requirements
 
-### Hardware
+#### Hardware
 - TI **MSP432P401R LaunchPad**
 - **Educational BoosterPack MKII** (LCD, joystick, OPT3001, TMP006)
 - Servo motor (PWM on P2.4 / Timer_A0 CCR1) + proper power supply
 - USB connection for debug (XDS110 on-board)
 
-### Software
+#### Software
 - **Code Composer Studio (CCS) v12.8.1**
 - **SimpleLink MSP432 SDK** (used for driverlib + grlib)
   - In this setup: `simplelink_msp432p4_sdk_3_40_01_02`
 
 > Note: library paths depend on your PC. If the SDK is installed in a different folder, you must update the project paths in CCS.
 
----
 
-## CCS Installation (macOS / Windows)
+### CCS Installation (macOS / Windows)
 
 1. Install **Code Composer Studio 12.8.1**
 2. Install the device support for **MSP432P4xx**
 3. Install **SimpleLink MSP432 SDK** (driverlib + grlib)
 
----
-
-## Import Project from ZIP
+### Import Project from ZIP
 
 1. Download the ZIP (GitHub → Code → Download ZIP)
 2. Unzip it
@@ -145,9 +141,7 @@ Main features:
 
 If CCS cannot find some libraries, follow the section **Library / Include Configuration** below.
 
----
-
-## Library / Include Configuration (IMPORTANT)
+### Library / Include Configuration (IMPORTANT)
 
 This project uses external TI libraries (not only local source files), especially:
 - **driverlib** (MSP432P4xx)
@@ -156,7 +150,7 @@ This project uses external TI libraries (not only local source files), especiall
 
 These libraries come from the **SimpleLink MSP432 SDK**, so I had to add include paths and link libraries manually.
 
-### A) Include Options (header search path)
+#### A) Include Options (header search path)
 Added paths (example from my PC):
 - `${CCS_BASE_ROOT}/...` (CCS base includes)
 - `${CG_TOOL_ROOT}/include` (TI toolchain includes)
@@ -168,7 +162,7 @@ In CCS:
 - `Project → Properties → Arm Compiler → Include Options`
 - add the paths listed above
 
-### B) Linker → File Search Path (libraries .lib / .a)
+#### B) Linker → File Search Path (libraries .lib / .a)
 The project links these libraries:
 - `grlib.a`
 - `msp432p4xx_driverlib.lib` (MSP432 driverlib)
@@ -183,27 +177,21 @@ In CCS:
 > - update `<SDK_PATH>` in the settings above
 > - or reinstall the SDK in a known location
 
----
-
-## Run / Debug
+### Run / Debug
 
 1. Connect the LaunchPad via USB
 2. `Run → Debug`
 3. CCS will flash the program automatically
 4. Press `Resume` to run
 
----
-
-## Notes
+### Notes
 - Servo PWM is generated using Timer_A on **P2.4**
 - BoosterPack sensors use I2C (OPT3001 / TMP006)
 
+### HARDWARE SIZE
+Below are the connections we set up to complete this project:
+<img src="./images/Black_board.jpeg" height="160px"> 
 
-### DYNAMIC DAY AND NIGHT MODE
-
-### USER INTERFACE
-#### PIN
-#### KEYPAD
 
 ## LINKS 
 * youtube: 
