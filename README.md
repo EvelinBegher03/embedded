@@ -21,6 +21,7 @@
   - [Library / Include Configuration (IMPORTANT)](#Library-/-Include-Configuration-(IMPORTANT))
   - [Run / Debug](#Run-/-Debug)
   - [Notes](#Notes)
+  - [hardware size](#hardware-size)
 
 ## PROJECT OVERVIEW
 <br>
@@ -190,7 +191,7 @@ In CCS:
 
 ### HARDWARE SIZE
 Below are the connections we set up to complete this project:
-<img src="./images/Black_board.jpeg" height="160px"> 
+<img src="./images/Blank_board.jpeg" height="160px"> 
 
 
 ## LINKS 
