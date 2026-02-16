@@ -36,7 +36,7 @@ A rechargeable battery that provides electric power for the whole system. <br>
 <b>USE </b>: to power the servo motor, the voltage converter, and all the electronic components of the project
 <img src="./images/batteria.jpg" height="100px"> 
 
-* <b>DIGITAL SERVO MOTOR MG995 </b><br>
+* <b>DIGITAL SERVO MOTOR MG996R </b><br>
 A digital motor that can turn to specific angles with high precision and strength, thanks to its metal gears. <br>
 <b>USE </b>: to move the locking mechanism of the door, allowing it to open and close automatically
 <img src="./images/servomotore.jpeg" height="200px"> 
