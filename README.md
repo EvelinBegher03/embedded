@@ -195,7 +195,7 @@ Below are the connections we set up to complete this project:<br>
 
 
 ## LINKS 
-## [youtube:]()
+## [youtube](https://youtu.be/WWI_nAmdwKU)
 ## [power point](https://www.canva.com/design/DAGsF2FHjr4/I5F8MHomFpACO2GtRyKmbA/edit?utm_content=DAGsF2FHjr4&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
